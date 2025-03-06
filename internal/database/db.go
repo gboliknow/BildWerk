@@ -1,6 +1,7 @@
 package database
 
 import (
+	"github.com/gboliknow/bildwerk/internal/models"
 	"github.com/rs/zerolog/log"
 
 	"gorm.io/driver/postgres"
@@ -23,16 +24,13 @@ func NewPostgresStorage(connStr string) (*PostgresStorage, error) {
 
 func (s *PostgresStorage) InitializeDatabase() (*gorm.DB, error) {
 
-	if err := s.db.AutoMigrate(); err != nil {
+	if err := s.db.AutoMigrate(
+		&models.User{},
+	); err != nil {
 		log.Error().Err(err).Msg("Failed to migrate database schema")
 		return nil, err
 	}
 
 	log.Info().Msg("Database schema migrated successfully")
-
-	// if err := s.SeedAdminUser(); err != nil {
-	// 	log.Error().Err(err).Msg("Failed to seed initial admin user")
-	// 	return nil, err
-	// }
 	return s.db, nil
 }
