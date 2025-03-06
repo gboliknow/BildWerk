@@ -4,21 +4,21 @@ import (
 	"net/http"
 	"os"
 
-	// _ "bil/docs"
+	_ "github.com/gboliknow/bildwerk/docs"
 
 	"github.com/gboliknow/bildwerk/internal/store"
 	"github.com/gboliknow/bildwerk/internal/user"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
-	// swaggerFiles "github.com/swaggo/files"     // swagger embed files
-	// ginSwagger "github.com/swaggo/gin-swagger" // gin-swagger middleware
+
+	swaggerFiles "github.com/swaggo/files"     // swagger embed files
+	ginSwagger "github.com/swaggo/gin-swagger" // gin-swagger middleware
 )
 
-// @title Nexvenue API
+// @title BildWerk API
 // @version 1.0
-// @description This is the API documentation for Nexvenue.
+// @description This is the API documentation for BildWerk.
 // @BasePath /api/v1
-// @host https://nexvenue.app
 type APIServer struct {
 	addr   string
 	store  *store.Store
@@ -35,7 +35,7 @@ func (s *APIServer) Serve() {
 	router := gin.Default()
 	apiV1 := router.Group("/api/v1")
 
-	//router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Initialize service & handler
 	userService := user.NewUserService(s.store, s.logger)
