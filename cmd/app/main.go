@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/gboliknow/bildwerk/cmd/app/api"
 	"github.com/gboliknow/bildwerk/internal/config"
+	"github.com/gboliknow/bildwerk/internal/database"
+	"github.com/gboliknow/bildwerk/internal/store"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -12,20 +15,20 @@ import (
 func main() {
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-	// connStr := getDatabaseConnectionString()
-	// sqlStorage, err := database.NewPostgresStorage(connStr)
-	// if err != nil {
-	// 	log.Fatal().Err(err).Msg("Failed to connect to database")
-	// }
-	// db, err := sqlStorage.InitializeDatabase()
-	// if err != nil {
-	// 	log.Fatal().Err(err).Msg("Failed to initialize database")
-	// }
-	// store := api.NewStore(db)
-	// port := os.Getenv("PORT")
-	// apiServer := api.NewAPIServer(":"+port, store)
-	// log.Info().Msg("Starting API server on port" + port)
-	// apiServer.Serve()
+	connStr := getDatabaseConnectionString()
+	sqlStorage, err := database.NewPostgresStorage(connStr)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to connect to database")
+	}
+	db, err := sqlStorage.InitializeDatabase()
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize database")
+	}
+	store := store.NewStore(db)
+	port := os.Getenv("PORT")
+	apiServer := api.NewAPIServer(":"+port, store)
+	log.Info().Msg("Starting API server on port" + port)
+	apiServer.Serve()
 
 }
 

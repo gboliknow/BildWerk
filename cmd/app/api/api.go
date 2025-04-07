@@ -21,11 +21,11 @@ import (
 // @BasePath /api/v1
 type APIServer struct {
 	addr   string
-	store  *store.Store
+	store   store.Store
 	logger zerolog.Logger
 }
 
-func NewAPIServer(addr string, store *store.Store) *APIServer {
+func NewAPIServer(addr string, store store.Store) *APIServer {
 	logger := zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger()
 
 	return &APIServer{addr: addr, store: store, logger: logger}

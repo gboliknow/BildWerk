@@ -3,6 +3,7 @@ package user
 import (
 	"net/http"
 
+	"github.com/gboliknow/bildwerk/internal/utility"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 )
@@ -43,6 +44,23 @@ func (h *UserHandler) HandleHealthCheck(c *gin.Context) {
 // @Success 201 {object} map[string]string
 // @Router /register [post]
 func (h *UserHandler) HandleRegister(c *gin.Context) {
-	// Call userService.CreateUser() here
-	c.JSON(http.StatusOK, gin.H{"message": "User registered successfully"})
+	var input RegisterUserDTO
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := ValidateUserPayload(input)
+	if err != nil {
+		utility.RespondWithError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	user, err := h.userService.RegisterUser(input)
+	if err != nil {
+		utility.RespondWithError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	utility.WriteJSON(c.Writer, http.StatusCreated, "user created", user)
 }
