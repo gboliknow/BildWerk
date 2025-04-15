@@ -27,12 +27,12 @@ func InitializeConfig() Config {
 	}
 
 	return Config{
-		Port:       getEnv("PORT", "8082"),
+		Port:       getEnv("PORT", "5432"),
 		DBUser:     getEnv("DB_USER", "user3"),
 		DBPassword: getEnv("DB_PASSWORD", "pass3"),
 		DBName:     getEnv("DB_NAME", "bildwerk"),
 		JWTSecret:  getEnv("JWT_SECRET", ""),
-		DBAddress:  fmt.Sprintf("%s:%s", getEnv("DB_HOST", "127.0.0.1"), getEnv("DB_PORT", "8082")),
+		DBAddress:  fmt.Sprintf("%s:%s", getEnv("DB_HOST", "127.0.0.1"), getEnv("DB_PORT", "5432")),
 	}
 }
 

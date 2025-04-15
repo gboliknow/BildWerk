@@ -8,6 +8,7 @@ import (
 	"time"
 	"unicode"
 
+	emailing "github.com/gboliknow/bildwerk/internal/email"
 	"github.com/gboliknow/bildwerk/internal/models"
 	"github.com/gboliknow/bildwerk/internal/store"
 	"github.com/gboliknow/bildwerk/internal/utility"
@@ -55,6 +56,30 @@ func (s *UserService) RegisterUser(input RegisterUserDTO) (*models.User, error) 
 	}
 
 	return s.store.CreateUser(user)
+}
+
+func (s *UserService) SendOTP(email, subject string) error {
+	otp, err := s.generateAndStoreOTP(email)
+	if err != nil {
+		return fmt.Errorf("error generating OTP: %w", err)
+	}
+
+	if subject == "" {
+		subject = "Your OTP Code"
+	}
+
+	if _, err := emailing.SendOTPEmail(email, otp, subject); err != nil {
+		return fmt.Errorf("error sending OTP email: %w", err)
+	}
+
+	return nil
+}
+
+func (s *UserService) VerifyOTP(email, otp string) error {
+	if err := s.validateOTP(email, otp); err != "" {
+		return fmt.Errorf(err)
+	}
+	return nil
 }
 
 func (s *UserService) FindUserByEmail(email string) error {

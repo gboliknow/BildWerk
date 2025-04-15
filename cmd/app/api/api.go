@@ -6,6 +6,7 @@ import (
 
 	_ "github.com/gboliknow/bildwerk/docs"
 
+	"github.com/gboliknow/bildwerk/internal/cache"
 	"github.com/gboliknow/bildwerk/internal/store"
 	"github.com/gboliknow/bildwerk/internal/user"
 	"github.com/gin-gonic/gin"
@@ -23,12 +24,13 @@ type APIServer struct {
 	addr   string
 	store   store.Store
 	logger zerolog.Logger
+	cache  *cache.RedisCache
 }
 
 func NewAPIServer(addr string, store store.Store) *APIServer {
 	logger := zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger()
-
-	return &APIServer{addr: addr, store: store, logger: logger}
+	redisCache := cache.NewRedisCache()
+	return &APIServer{addr: addr, store: store, logger: logger,cache: redisCache}
 }
 
 func (s *APIServer) Serve() {
@@ -39,7 +41,7 @@ func (s *APIServer) Serve() {
 
 	// Initialize service & handler
 	userService := user.NewUserService(s.store, s.logger)
-	userHandler := user.NewUserHandler(userService, s.logger)
+	userHandler := user.NewUserHandler(userService, s.logger, s.cache)
 
 	// Register user routes
 	userHandler.RegisterUserRoutes(apiV1)

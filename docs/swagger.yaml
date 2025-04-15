@@ -1,7 +1,41 @@
+definitions:
+  user.RegisterUserDTO:
+    description: Payload to register a user
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      otp:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  user.SendOTPRequestDTO:
+    properties:
+      email:
+        type: string
+      subject:
+        type: string
+    required:
+    - email
+    type: object
+  user.VerifyOTPRequestDTO:
+    properties:
+      email:
+        type: string
+      otp:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
-  /healthCheck:
+  /api/v1/healthCheck:
     get:
       consumes:
       - application/json
@@ -18,30 +52,125 @@ paths:
       summary: Health Check
       tags:
       - health
-  /register:
+  /api/v1/register:
     post:
       consumes:
       - application/json
       description: Registers a new user with email and password
       parameters:
-      - description: User registration details
+      - description: User registration data
         in: body
         name: request
         required: true
         schema:
-          additionalProperties:
-            type: string
-          type: object
+          $ref: '#/definitions/user.RegisterUserDTO'
       produces:
       - application/json
       responses:
         "201":
-          description: Created
+          description: User created successfully with authentication token
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request payload
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Invalid OTP
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Email already exists
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
           schema:
             additionalProperties:
               type: string
             type: object
       summary: Register User
       tags:
-      - user
+      - Users
+  /api/v1/users/sendOtp:
+    post:
+      consumes:
+      - application/json
+      description: This endpoint sends a one-time password (OTP) to the specified
+        user's email for verification.
+      parameters:
+      - description: Email Address
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/user.SendOTPRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OTP sent to email
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request payload
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to send OTP
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Send OTP to user's email
+      tags:
+      - Users
+  /api/v1/users/verify:
+    post:
+      consumes:
+      - application/json
+      description: This endpoint verifies the OTP sent to the user's email.
+      parameters:
+      - description: Email and OTP
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/user.VerifyOTPRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OTP verified
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request payload
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: OTP verification failed
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Verify OTP
+      tags:
+      - Users
 swagger: "2.0"

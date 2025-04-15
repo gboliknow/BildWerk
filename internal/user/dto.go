@@ -13,3 +13,14 @@ type LoginUserDTO struct {
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required"`
 }
+
+
+type SendOTPRequestDTO struct {
+	Email   string `json:"email" binding:"required"`
+	Subject string `json:"subject"`
+}
+
+type VerifyOTPRequestDTO struct {
+	Email string `json:"email"`
+	OTP   string `json:"otp"`
+}
