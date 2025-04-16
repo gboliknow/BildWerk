@@ -3,6 +3,7 @@ package user
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"regexp"
 	"sync"
 	"time"
@@ -12,6 +13,7 @@ import (
 	"github.com/gboliknow/bildwerk/internal/models"
 	"github.com/gboliknow/bildwerk/internal/store"
 	"github.com/gboliknow/bildwerk/internal/utility"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -32,21 +34,16 @@ func NewUserService(s store.Store, logger zerolog.Logger) *UserService {
 }
 
 // Business logic functions (without HTTP context)
-func (s *UserService) RegisterUser(input RegisterUserDTO) (*models.User, error) {
-	var existingUser models.User
-	err := s.store.FindUserByEmail(input.Email, &existingUser)
-	if err != nil {
-		return nil, errors.New("user already exists")
-	}
+func (s *UserService) RegisterUser(input RegisterUserDTO) (*models.User, *utility.AppError) {
 
-	if err := s.validateOTP(input.Email, input.OTP); err != "" {
+	if errMsg := s.validateOTP(input.Email, input.OTP); errMsg != "" {
 		log.Warn().Str("otp", input.OTP).Msg("Invalid OTP passed for email registration")
-		return nil, errors.New(err)
+		return nil, utility.NewAppError(errMsg, http.StatusBadRequest)
 	}
 
 	hashedPassword, err := utility.HashPassword(input.Password)
 	if err != nil {
-		return nil, err
+		return nil, utility.NewAppError("Error Creating User", http.StatusInternalServerError)
 	}
 
 	user := &models.User{
@@ -54,8 +51,15 @@ func (s *UserService) RegisterUser(input RegisterUserDTO) (*models.User, error) 
 		Email:    input.Email,
 		Password: hashedPassword,
 	}
+	u, err := s.store.CreateUser(user)
+	if err != nil {
+		if pgErr, ok := err.(*pgconn.PgError); ok && pgErr.Code == "23505" {
+			return nil, utility.NewAppError("Email already exists", http.StatusConflict)
+		}
+		return nil, utility.NewAppError("Error creating user", http.StatusInternalServerError)
+	}
 
-	return s.store.CreateUser(user)
+	return u, nil
 }
 
 func (s *UserService) SendOTP(email, subject string) error {

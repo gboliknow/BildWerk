@@ -69,9 +69,9 @@ func (h *UserHandler) HandleRegister(c *gin.Context) {
 		return
 	}
 
-	user, err := h.userService.RegisterUser(input)
-	if err != nil {
-		utility.RespondWithError(c, http.StatusInternalServerError, err.Error())
+	user, appErr := h.userService.RegisterUser(input)
+	if appErr != nil {
+		utility.RespondWithError(c, appErr.StatusCode, appErr.Message)
 		return
 	}
 
