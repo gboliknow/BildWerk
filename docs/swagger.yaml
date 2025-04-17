@@ -1,20 +1,26 @@
 definitions:
+  user.LoginRequestDTO:
+    properties:
+      email:
+        type: string
+      otp:
+        type: string
+    required:
+    - email
+    type: object
   user.RegisterUserDTO:
     description: Payload to register a user
     properties:
       email:
         type: string
-      name:
+      firstName:
+        type: string
+      lastName:
         type: string
       otp:
         type: string
-      password:
-        minLength: 6
-        type: string
     required:
     - email
-    - name
-    - password
     type: object
   user.SendOTPRequestDTO:
     properties:
@@ -52,7 +58,49 @@ paths:
       summary: Health Check
       tags:
       - health
-  /api/v1/register:
+  /api/v1/users/login:
+    post:
+      consumes:
+      - application/json
+      description: This endpoint allows users to log in using their email or user
+        tag and password. It returns a JWT token upon successful authentication.
+      parameters:
+      - description: Login request data
+        in: body
+        name: loginRequest
+        required: true
+        schema:
+          $ref: '#/definitions/user.LoginRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User successfully logged in with JWT token
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request payload
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: User not found or invalid email/password
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: User login
+      tags:
+      - Users
+  /api/v1/users/register:
     post:
       consumes:
       - application/json

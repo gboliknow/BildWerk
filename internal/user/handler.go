@@ -25,10 +25,15 @@ func NewUserHandler(userService *UserService, logger zerolog.Logger, c *cache.Re
 func (h *UserHandler) RegisterUserRoutes(r *gin.RouterGroup) {
 	rateLimiter := middleware.RateLimitMiddleware(time.Second, 5, h.cache)
 	r.GET("/healthCheck", h.HandleHealthCheck)
-	r.POST("/register", h.HandleRegister)
 
-	r.POST("/users/sendOtp", rateLimiter, h.handleSendOTP)
-	r.POST("/users/verify", h.handleVerifyOTP)
+	userGroup := r.Group("/users")
+	{
+		userGroup.POST("register", h.HandleRegister)
+		userGroup.POST("login", h.handleLogin)
+		userGroup.POST("/sendOtp", rateLimiter, h.handleSendOTP)
+		userGroup.POST("/verify", h.handleVerifyOTP)
+	}
+
 }
 
 // HandleHealthCheck checks API health
@@ -55,7 +60,7 @@ func (h *UserHandler) HandleHealthCheck(c *gin.Context) {
 // @Failure 401 {object} map[string]string "Invalid OTP"
 // @Failure 409 {object} map[string]string "Email already exists"
 // @Failure 500 {object} map[string]string "Internal server error"
-// @Router /api/v1/register [post]
+// @Router /api/v1/users/register [post]
 func (h *UserHandler) HandleRegister(c *gin.Context) {
 	var input RegisterUserDTO
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -132,4 +137,31 @@ func (h *UserHandler) handleVerifyOTP(c *gin.Context) {
 
 	logging.LogOtpVerification(payload.Email, true)
 	utility.WriteJSON(c.Writer, http.StatusOK, "OTP verified", nil)
+}
+
+// handleUserLogin godoc
+// @Summary User login
+// @Description This endpoint allows users to log in using their email or user tag and password. It returns a JWT token upon successful authentication.
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param loginRequest body LoginRequestDTO true "Login request data"
+// @Success 200 {object} map[string]interface{} "User successfully logged in with JWT token"
+// @Failure 400 {object} map[string]string "Invalid request payload"
+// @Failure 401 {object} map[string]string "User not found or invalid email/password"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router  /api/v1/users/login [post]
+func (h *UserHandler) handleLogin(c *gin.Context) {
+	var input LoginRequestDTO
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	user, appErr := h.userService.handleUserLogin(input, c)
+	if appErr != nil {
+		utility.RespondWithError(c, appErr.StatusCode, appErr.Message)
+		return
+	}
+
+	utility.WriteJSON(c.Writer, http.StatusCreated, "User login successfully", user)
 }

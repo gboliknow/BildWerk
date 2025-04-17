@@ -30,7 +30,69 @@
                 }
             }
         },
-        "/api/v1/register": {
+        "/api/v1/users/login": {
+            "post": {
+                "description": "This endpoint allows users to log in using their email or user tag and password. It returns a JWT token upon successful authentication.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "User login",
+                "parameters": [
+                    {
+                        "description": "Login request data",
+                        "name": "loginRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/user.LoginRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User successfully logged in with JWT token",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request payload",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "User not found or invalid email/password",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/users/register": {
             "post": {
                 "description": "Registers a new user with email and password",
                 "consumes": [
@@ -215,27 +277,38 @@
         }
     },
     "definitions": {
-        "user.RegisterUserDTO": {
-            "description": "Payload to register a user",
+        "user.LoginRequestDTO": {
             "type": "object",
             "required": [
-                "email",
-                "name",
-                "password"
+                "email"
             ],
             "properties": {
                 "email": {
                     "type": "string"
                 },
-                "name": {
+                "otp": {
+                    "type": "string"
+                }
+            }
+        },
+        "user.RegisterUserDTO": {
+            "description": "Payload to register a user",
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
                     "type": "string"
                 },
                 "otp": {
                     "type": "string"
-                },
-                "password": {
-                    "type": "string",
-                    "minLength": 6
                 }
             }
         },
