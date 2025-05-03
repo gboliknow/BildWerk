@@ -1,4 +1,25 @@
 definitions:
+  models.ImageResponse:
+    properties:
+      created_at:
+        type: string
+      filename:
+        type: string
+      format:
+        type: string
+      height:
+        type: integer
+      id:
+        type: string
+      original_id:
+        type: string
+      size:
+        type: integer
+      url:
+        type: string
+      width:
+        type: integer
+    type: object
   user.LoginRequestDTO:
     properties:
       email:
@@ -58,6 +79,57 @@ paths:
       summary: Health Check
       tags:
       - health
+  /api/v1/image/upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload an image file (JPEG, PNG, WebP) with metadata
+      parameters:
+      - description: Image file
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: File name
+        in: formData
+        name: filename
+        required: true
+        type: string
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ImageResponse'
+        "400":
+          description: Invalid form data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Upload an image
+      tags:
+      - Image
   /api/v1/users/login:
     post:
       consumes:

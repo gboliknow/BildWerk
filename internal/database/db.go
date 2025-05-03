@@ -26,6 +26,7 @@ func (s *PostgresStorage) InitializeDatabase() (*gorm.DB, error) {
 
 	if err := s.db.AutoMigrate(
 		&models.User{},
+		&models.Image{},
 	); err != nil {
 		log.Error().Err(err).Msg("Failed to migrate database schema")
 		return nil, err

@@ -32,19 +32,20 @@ func (h *ImageHandler) RegisterImageRoutes(r *gin.RouterGroup) {
 
 }
 
-// HandleUploadImage handles image upload requests
-// @Summary Upload an image
-// @Description Upload an image file (JPEG, PNG, WebP) with metadata
-// @Tags Image
-// @Accept multipart/form-data
-// @Produce json
-// @Param file formData file true "Image file"
-// @Param filename formData string true "File name"
-// @Param user_id formData string true "User ID"
-// @Success 200 {object} models.ImageResponse
-// @Failure 400 {object} utility.AppError
-// @Failure 500 {object} utility.AppError
-// @Router  /api/v1/image/upload [post]
+// @Summary      Upload an image
+// @Description  Upload an image file (JPEG, PNG, WebP) with metadata
+// @Tags         Image
+// @Accept       multipart/form-data
+// @Produce      json
+// @Param        file     formData  file    true  "Image file"
+// @Param        filename formData  string  true  "File name"
+// @Param        Authorization header string true "Bearer Token"
+// @Security     BearerAuth
+// @Success      200 {object} models.ImageResponse
+// @Failure      400 {object} map[string]string "Invalid form data"
+// @Failure      401 {object} map[string]string "Unauthorized"
+// @Failure      500 {object} map[string]string "Internal Server Error"
+// @Router       /api/v1/image/upload [post]
 func (h *ImageHandler) HandleUploadImage(c *gin.Context) {
 	var input UploadImageDTO
 	if err := c.ShouldBind(&input); err != nil {
@@ -80,3 +81,5 @@ func (h *ImageHandler) HandleUploadImage(c *gin.Context) {
 	utility.WriteJSON(c.Writer, http.StatusOK, "Image saved", imageResp)
 
 }
+
+// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHBpcmVzQXQiOjE3NDYzNzU3MjgsInVzZXJJRCI6ImNlNDFjOTZjLThjNjAtNGEyYi05YTNkLWRhZDllYzYyYTQzMCJ9.OY1NRbnpvfG0UUfgmzzFENmeG7_s51leKASTdPTeK2w
