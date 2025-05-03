@@ -14,6 +14,7 @@ type Store interface {
 	CreateUser(user *models.User) (*models.User, error)
 	FindUserByEmail(email string, user *models.User) error
 	FindUserByID(userID string) (*models.User, error)
+	CreateImage(image *models.Image) (*models.Image, error)
 }
 
 type Storage struct {
@@ -34,6 +35,13 @@ func (s *Storage) CreateUser(user *models.User) (*models.User, error) {
 	return user, nil
 }
 
+func (s *Storage) CreateImage(image *models.Image) (*models.Image, error) {
+	image.CreatedAt = time.Now()
+	if err := s.db.Create(image).Error; err != nil {
+		return nil, err
+	}
+	return image, nil
+}
 
 func (s *Storage) FindUserByEmail(email string, user *models.User) error {
 	return s.db.Where("email = ?", email).First(user).Error
